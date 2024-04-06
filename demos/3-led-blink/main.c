@@ -5,9 +5,19 @@
 
 int main(void) {
   P1DIR |= LEDS;
+
+  //modified: keep green on (P1OUT ^= LED_RED) blink red
+  /* 
+  P1OUT &= ~LED_RED;
+  P1OUT |= LED_GREEN;
+  */
+  
+  //OG code (keep red on) (P1OUT ^= LED_GREEN) blink green
+
   P1OUT &= ~LED_GREEN;
   P1OUT |= LED_RED;
-
+  
+  
   configureClocks();		/* setup master oscillator, CPU & peripheral clocks */
   enableWDTInterrupts();	/* enable periodic interrupt */
   
