@@ -16,7 +16,7 @@ load: led.elf
 	msp430loader.sh led.elf
 
 clean:
-	rm -f *.o *.elf *~
+	rm -f *.o *.elf *~ *.c#
 
 buzzer.c: buzzer.h
 main.c: buzzer.h
