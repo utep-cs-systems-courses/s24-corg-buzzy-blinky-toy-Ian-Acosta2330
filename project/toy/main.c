@@ -3,6 +3,13 @@
 #include "led.h"
 #include "buzzer.h"
 
+#define NOTE_A 440
+#define NOTE_B 494
+#define NOTE_C 262
+#define NOTE_D 294
+#define NOTE_E 330
+#define NOTE_F 349
+#define NOTE_G 392
 
 #define SW1 BIT3
 #define SW2 BIT0
@@ -14,9 +21,22 @@
 //#define SWITCH_B SW2
 
 //4 and 5 for sounds
-#define SWITCH_L SW2, SW3, SW4, SW5
+//#define SWITCH_L (SW2 | SW3 | SW4 | SW5)
 //#define SWITCH_S SW4, SW5
 #define SWITCH_1 SW1
+
+#define SWITCH_2 SW2
+#define SWITCH_3 SW3
+#define SWITCH_4 SW4
+#define SWITCH_5 SW5
+
+#define SWITCH_P2 (SWITCH_2 | SWITCH_3 | SWITCH_4 | SWITCH_5)
+
+void zelda_lullaby() {
+  buzzer_set_period(NOTE_G);
+  __delay_cycles(500);
+  buzzer_set_period(0);
+}
 
 int main(void) {
   P1DIR |= LEDS;
@@ -24,11 +44,9 @@ int main(void) {
 
   P2DIR |= LEDS;
   P2OUT &= ~LEDS;
-  
-  /*
-  P2DIR |= LEDS
+
+  P2DIR |= LEDS;
   P2OUT &= ~LEDS;
-  */
   
   configureClocks();
 
@@ -39,63 +57,89 @@ int main(void) {
   P1OUT |= SWITCH_1;
   P1DIR &= ~SWITCH_1;
   
-  P2REN |= SWITCH_L;
-  P2IE |= SWITCH_L;
-  P2OUT |= SWITCH_L;
-  P2DIR &= ~SWITCH_L;
+  P2REN |= SWITCH_P2;
+  P2IE |= SWITCH_P2;
+  P2OUT |= SWITCH_P2;
+  P2DIR &= ~SWITCH_P2;
 
   or_sr(0x18);
 }
 
 void switch_interrupt_handler() {
   char p1val = P1IN;
-  
-  char p2val = P2IN;
 
   P1IES |= (p1val & SWITCH_1);
   P1IES &= (p1val | ~SWITCH_1);
   
-  P2IES |= (p2val & SWITCH_L);
-  P2IES &= (p2val | ~SWITCH_L);
-
   //S1 turns on red led
-  if (p1val & SW1) {
+  if (p1val & SWITCH_1) {
     P1OUT |= LED_RED;
     P1OUT &= ~LED_GREEN;
-    //buzzer_set_period(0);
+    //  buzzer_set_period(0);
   } else {
     P1OUT &= ~LED_RED;
     P1OUT |= LED_GREEN;
-    //buzzer_set_period(0);
+    //  buzzer_set_period(1000);
   }
+}
+
+void switch_interrupt_handler_P2_2() {
+  char p2val = P2IN;
+
+  P2IES |= (p2val & SWITCH_2);
+  P2IES &= (p2val | ~SWITCH_2);
   
   if(p2val & SW2) {
-    P2OUT |= LED_GREEN;
-    P2OUT &= ~LED_RED;
-    // buzzer_set_period(0);
-  } else {
-    P2OUT &= ~LED_GREEN;
-    //buzzer_set_period(800);
-  }
-  
-  if(p2val & SW3) {
     buzzer_set_period(0);
-  }else {
+    /* buzzer_set_period(NOTE_E);
+    __delay_cycles(500);
+    buzzer_set_period(NOTE_G);
+    __delay_cycles(250);
+    buzzer_set_period(NOTE_D);
+    __delay_cycles(750);
+    buzzer_set_period(0);*/
+  } else {
+    /*buzzer_set_period(NOTE_E);
+    __delay_cycles(500);
+    buzzer_set_period(NOTE_G);
+    __delay_cycles(250);
+    buzzer_set_period(NOTE_D);
+    __delay_cycles(750);*/
     buzzer_set_period(800);
   }
-  
-  if(p2val & SW4) {
-    buzzer_set_period(0);
-  } else {
-    buzzer_set_period(800);
-  }
+}
 
-  if(p2val & SW5) {
+void switch_interrupt_handler_P2_3() {
+  char p2val = P2IN;
+  P2IES |= (p2val & SWITCH_3);
+  P2IES &= (p2val | ~SWITCH_3);
+  if(p2val & SW3) {
     buzzer_set_period(0);
   } else {
     buzzer_set_period(1000);
   }
-  
+}
+
+void switch_interrupt_handler_P2_4() {
+  char p2val = P2IN;
+  P2IES |= (p2val & SWITCH_4);
+  P2IES &= (p2val | ~SWITCH_4);
+  if (p2val & SW4) {
+    buzzer_set_period(0);
+  } else {
+    buzzer_set_period(300);
+  }
+}
+
+void switch_interrupt_handler_P2_5() {
+  char p2val = P2IN;
+  P2IES |= (p2val & SWITCH_5);
+  P2IES &= (p2val | ~SWITCH_5);
+  if(p2val & SW5) {
+    buzzer_set_period(0);
+  } else {
+    buzzer_set_period(400);
+  }
 }
 
 void __interrupt_vec(PORT1_VECTOR) Port_1() {
@@ -106,9 +150,20 @@ void __interrupt_vec(PORT1_VECTOR) Port_1() {
 }
 
 void __interrupt_vec(PORT2_VECTOR) Port_2() {
-  if (P2IFG & SWITCH_L) {
-    P2IFG &= ~SWITCH_L;
-    switch_interrupt_handler();
+  if (P2IFG & SWITCH_2) {
+    P2IFG &= ~SWITCH_2;
+    switch_interrupt_handler_P2_2();
   }
-  
+  if (P2IFG & SWITCH_3) {
+    P2IFG &= ~SWITCH_3;
+    switch_interrupt_handler_P2_3();
+  }
+  if (P2IFG & SWITCH_4) {
+    P2IFG &= ~SWITCH_4;
+    switch_interrupt_handler_P2_4();
+  }
+  if(P2IFG & SWITCH_5) {
+    P2IFG &= ~SWITCH_5;
+    switch_interrupt_handler_P2_5();
+  }
 }
