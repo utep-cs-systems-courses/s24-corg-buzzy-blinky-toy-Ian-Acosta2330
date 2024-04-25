@@ -5,12 +5,15 @@
 	.global redControl
 	.extern P1OUT
 
-redControl:	
-	cmp #0, r12
+redControl:
+	cmp #0, r12		;if on
 	jz itsOff
-	bis #64, &P1OUT		
-	pop r0
-	
-itsOff:
 	and #~64, &P1OUT
+	mov #0, r12
 	pop r0
+itsOff:
+	bis #64, &P1OUT
+	mov #1, r12
+	pop r0
+
+	ret

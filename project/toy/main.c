@@ -66,7 +66,7 @@ void switch_interrupt_handler_P1() {
   P1IES &= (p1val | ~SWITCH_1);
 
   if (p1val & SW1) {
-    P1OUT &= ~LEDS;
+    //P1OUT &= ~LEDS;
     //P1OUT &= ~LED_GREEN;
     // buzzer_set_period(0);
     //redControl(1);
@@ -146,8 +146,11 @@ void switch_interrupt_handler_P2_5() {
     __delay_cycles(10000000);
     buzzer_set_period(5870);
     __delay_cycles(5000000);
-    buzzer_set_period(4400);
+    buzzer_set_period(4940);
     __delay_cycles(10000000);
+    buzzer_set_period(1000);
+    __delay_cycles(20000000);
+    buzzer_set_period(0);
     /* buzzer_set_period(4940);
     __delay_cycles(2500000);
     buzzer_set_period(5240);

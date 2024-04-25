@@ -10,7 +10,7 @@ AS = msp430-elf-as
 all: led-c.elf #led-s.elf
 
 
-led-s.elf: ${COMMON_OBJECTS} buzzer.o redControl-s.o
+led-s.elf: ${COMMON_OBJECTS} buzzer.o redControl-s.o blink.o
 	${CC} ${CFLAGS} ${LDFLAGS} -o $@ $^ ../lib/libTimer.a
 
 led-c.elf: ${COMMON_OBJECTS} buzzer.o redControl-c.o blink.o song.o
