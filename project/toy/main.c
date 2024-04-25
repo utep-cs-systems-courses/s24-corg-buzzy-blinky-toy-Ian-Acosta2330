@@ -26,6 +26,7 @@
 #define SWITCH_P2 (SWITCH_2 | SWITCH_3 | SWITCH_4 | SWITCH_5)
 
 volatile int red_on = 0;
+volatile int green_on = 0;
 
 int main(void) {
   P1DIR |= LEDS;
@@ -33,7 +34,7 @@ int main(void) {
 
   // P2 may not have LEDS wut
   // P2DIR |= LEDS;
-  P2OUT |= LEDS;
+  //P2OUT |= LEDS;
 
   configureClocks();
   buzzer_init();
@@ -56,39 +57,7 @@ int main(void) {
   or_sr(0x18);
 
 }
-/*
-static int blinkLimit = 5;
-void blinkUpdate() {
-  static int blinkCount = 0;
-  blinkCount++;
-  if (blinkCount >= blinkLimit) {
-    blinkCount = 0;
-    redControl(1);
-  } else
-    redControl(0);
-}
 
-void oncePerSecond() {
-  blinkLimit++;
-  if (blinkLimit >= 8) {
-    blinkLimit = 0;
-  }
-}
-
-void secondUpdate() {
-  static int secondCount = 0;
-  secondCount++;
-  if (secondCount >= 250) {
-    secondCount = 0;
-    oncePerSecond();
-  }
-}
-
-void timeAdvStateMachines() {
-  blinkUpdate();
-  secondUpdate();
-}
-*/
 void switch_interrupt_handler_P1() {
   char p1val = P1IN;
 
@@ -96,14 +65,15 @@ void switch_interrupt_handler_P1() {
   P1IES &= (p1val | ~SWITCH_1);
 
   if (p1val & SW1) {
-    P1OUT |= LED_RED;
+    P1OUT &= ~LEDS;
     //P1OUT &= ~LED_GREEN;
     // buzzer_set_period(0);
     //redControl(1);
-    red_on = 0;
+   
   } else {
-    P1OUT |= ~LED_RED;
+    P1OUT |= LEDS;
     red_on = 1;
+    green_on = 1;
     //redControl(0);
     //P1OUT |= LED_GREEN;
     //buzzer_set_period(800);
@@ -126,7 +96,6 @@ void switch_interrupt_handler_P2_2() {
   if(p2val & SW2) {
     //P1OUT &= ~LED_RED;
     //buzzer_set_period(0);
-   
   } else {
    red_on = redControl(red_on);
     //buzzer_set_period(800);
@@ -143,10 +112,12 @@ void switch_interrupt_handler_P2_3() {
   P2IES &= (p2val | ~SWITCH_3);
   if(p2val & SW3) {
     P1OUT &= ~LED_GREEN;
+    green_on = 0;
     //buzzer_set_period(0);
  } else {
     P1OUT |= LED_GREEN;
     //buzzer_set_period(3300);
+    green_on = 1;
   }
 }
 
@@ -155,9 +126,11 @@ void switch_interrupt_handler_P2_4() {
   P2IES |= (p2val & SWITCH_4);
   P2IES &= (p2val | ~SWITCH_4);
   if (p2val & SW4) {
-    buzzer_set_period(0);
+    if(red_on) {
+      blink();
+    }
   } else {
-    buzzer_set_period(3920);
+    P1OUT &= ~LED_RED;
   }
 }
 

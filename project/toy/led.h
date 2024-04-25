@@ -6,5 +6,6 @@
 #define LEDS (BIT6 | BIT0)
 
 int redControl(int on);
+void blink();
 
 #endif

@@ -1,17 +1,16 @@
-/*	.arch msp430g2553
+	.arch msp430g2553
 	.p2align 1,0
 	.text
-
-
 	
 	.global redControl
 	.extern P1OUT
 
-redControl:
+redControl:	
 	cmp #0, r12
-	jz off
-	bis #64, &P1OUT
+	jz itsOff
+	bis #64, &P1OUT		
 	pop r0
-off:	and #~64, &P1OUT
+	
+itsOff:
+	and #~64, &P1OUT
 	pop r0
-*/
