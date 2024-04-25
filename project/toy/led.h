@@ -7,5 +7,7 @@
 
 int redControl(int on);
 void blink();
+void song();
+void play(int dur);
 
 #endif

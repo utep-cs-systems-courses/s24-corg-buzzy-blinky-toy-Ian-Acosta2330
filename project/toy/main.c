@@ -49,6 +49,7 @@ int main(void) {
   
   P2REN |= SWITCH_P2;
   P2IE |= SWITCH_P2;
+  P2IES |= SWITCH_P2;
   P2OUT |= SWITCH_P2;
   /*
   P2DIR &= ~SWITCH_P2;
@@ -141,7 +142,16 @@ void switch_interrupt_handler_P2_5() {
   if(p2val & SW5) {
     buzzer_set_period(0);
   } else {
-    buzzer_set_period(2940);
+    buzzer_set_period(4940);
+    __delay_cycles(10000000);
+    buzzer_set_period(5870);
+    __delay_cycles(5000000);
+    buzzer_set_period(4400);
+    __delay_cycles(10000000);
+    /* buzzer_set_period(4940);
+    __delay_cycles(2500000);
+    buzzer_set_period(5240);
+    */
   }
 }
 /*
@@ -171,6 +181,7 @@ void __interrupt_vec(PORT2_VECTOR) Port_2() {
   }
   if(P2IFG & SWITCH_5) {
     P2IFG &= ~SWITCH_5;
+    //song();
     switch_interrupt_handler_P2_5();
   }
 }

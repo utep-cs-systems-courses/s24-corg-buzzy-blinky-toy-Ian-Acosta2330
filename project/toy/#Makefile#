@@ -26,6 +26,7 @@ clean:
 
 buzzer.c: buzzer.h
 
+
 main.o: led.h
 redControl-c.o: led.h 
 wdInterruptHandler.o: led.h
