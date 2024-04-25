@@ -3,15 +3,11 @@
 #include "led.h"
 #include "buzzer.h"
 
-#define NOTE_A 440
-#define NOTE_B 494
-#define NOTE_C 262
-#define NOTE_D 294
-#define NOTE_E 330
-#define NOTE_F 349
-#define NOTE_G 392
-
+//#define LED_RED BIT6
+//#define LED_GREEN BIT0
+//#define LEDS (BIT6 | BIT0)
 #define SW1 BIT3
+
 #define SW2 BIT0
 #define SW3 BIT1
 #define SW4 BIT2
@@ -20,9 +16,6 @@
 //#define SWITCH_A SW1
 //#define SWITCH_B SW2
 
-//4 and 5 for sounds
-//#define SWITCH_L (SW2 | SW3 | SW4 | SW5)
-//#define SWITCH_S SW4, SW5
 #define SWITCH_1 SW1
 
 #define SWITCH_2 SW2
@@ -32,81 +25,116 @@
 
 #define SWITCH_P2 (SWITCH_2 | SWITCH_3 | SWITCH_4 | SWITCH_5)
 
-void zelda_lullaby() {
-  buzzer_set_period(NOTE_G);
-  __delay_cycles(500);
-  buzzer_set_period(0);
-}
+volatile int red_on = 0;
 
 int main(void) {
   P1DIR |= LEDS;
   P1OUT &= ~LEDS;
 
-  P2DIR |= LEDS;
-  P2OUT &= ~LEDS;
+  // P2 may not have LEDS wut
+  // P2DIR |= LEDS;
+  P2OUT |= LEDS;
 
-  P2DIR |= LEDS;
-  P2OUT &= ~LEDS;
-  
   configureClocks();
-
   buzzer_init();
+  // enableWDTInterrupts();
+
   
   P1REN |= SWITCH_1;
   P1IE |= SWITCH_1;
   P1OUT |= SWITCH_1;
   P1DIR &= ~SWITCH_1;
   
+  
   P2REN |= SWITCH_P2;
   P2IE |= SWITCH_P2;
   P2OUT |= SWITCH_P2;
+  /*
   P2DIR &= ~SWITCH_P2;
-
+  */
+  
   or_sr(0x18);
+
+}
+/*
+static int blinkLimit = 5;
+void blinkUpdate() {
+  static int blinkCount = 0;
+  blinkCount++;
+  if (blinkCount >= blinkLimit) {
+    blinkCount = 0;
+    redControl(1);
+  } else
+    redControl(0);
 }
 
-void switch_interrupt_handler() {
+void oncePerSecond() {
+  blinkLimit++;
+  if (blinkLimit >= 8) {
+    blinkLimit = 0;
+  }
+}
+
+void secondUpdate() {
+  static int secondCount = 0;
+  secondCount++;
+  if (secondCount >= 250) {
+    secondCount = 0;
+    oncePerSecond();
+  }
+}
+
+void timeAdvStateMachines() {
+  blinkUpdate();
+  secondUpdate();
+}
+*/
+void switch_interrupt_handler_P1() {
   char p1val = P1IN;
 
   P1IES |= (p1val & SWITCH_1);
   P1IES &= (p1val | ~SWITCH_1);
-  
-  //S1 turns on red led
-  if (p1val & SWITCH_1) {
+
+  if (p1val & SW1) {
     P1OUT |= LED_RED;
-    P1OUT &= ~LED_GREEN;
-    //  buzzer_set_period(0);
+    //P1OUT &= ~LED_GREEN;
+    // buzzer_set_period(0);
+    //redControl(1);
+    red_on = 0;
   } else {
-    P1OUT &= ~LED_RED;
-    P1OUT |= LED_GREEN;
-    //  buzzer_set_period(1000);
+    P1OUT |= ~LED_RED;
+    red_on = 1;
+    //redControl(0);
+    //P1OUT |= LED_GREEN;
+    //buzzer_set_period(800);
   }
+  //P1IFG &= SWITCH_1;
 }
+
+/*
+void song(int A, int B, int C4, int D, int E, int F, int G) {
+  buzzer_set_period(A);
+  buzzer_set_period(0);
+}*/
 
 void switch_interrupt_handler_P2_2() {
   char p2val = P2IN;
-
+  
   P2IES |= (p2val & SWITCH_2);
   P2IES &= (p2val | ~SWITCH_2);
   
   if(p2val & SW2) {
-    buzzer_set_period(0);
-    /* buzzer_set_period(NOTE_E);
-    __delay_cycles(500);
-    buzzer_set_period(NOTE_G);
-    __delay_cycles(250);
-    buzzer_set_period(NOTE_D);
-    __delay_cycles(750);
-    buzzer_set_period(0);*/
+    //P1OUT &= ~LED_RED;
+    //buzzer_set_period(0);
+   
   } else {
-    /*buzzer_set_period(NOTE_E);
-    __delay_cycles(500);
-    buzzer_set_period(NOTE_G);
-    __delay_cycles(250);
-    buzzer_set_period(NOTE_D);
-    __delay_cycles(750);*/
-    buzzer_set_period(800);
+   red_on = redControl(red_on);
+    //buzzer_set_period(800);
+    //redControl(1);
   }
+
+  //P2IFG &= ~SWITCH_2;
+  
 }
 
 void switch_interrupt_handler_P2_3() {
@@ -114,9 +142,11 @@ void switch_interrupt_handler_P2_3() {
   P2IES |= (p2val & SWITCH_3);
   P2IES &= (p2val | ~SWITCH_3);
   if(p2val & SW3) {
-    buzzer_set_period(0);
-  } else {
-    buzzer_set_period(1000);
+    P1OUT &= ~LED_GREEN;
+    //buzzer_set_period(0);
+ } else {
+    P1OUT |= LED_GREEN;
+    //buzzer_set_period(3300);
   }
 }
 
@@ -127,7 +157,7 @@ void switch_interrupt_handler_P2_4() {
   if (p2val & SW4) {
     buzzer_set_period(0);
   } else {
-    buzzer_set_period(300);
+    buzzer_set_period(3920);
   }
 }
 
@@ -138,14 +168,18 @@ void switch_interrupt_handler_P2_5() {
   if(p2val & SW5) {
     buzzer_set_period(0);
   } else {
-    buzzer_set_period(400);
+    buzzer_set_period(2940);
   }
 }
+/*
+void __interrupt_vec(WDT_VECTOR) WDT() {
+  timeAdvStateMachines();
+  }*/
 
 void __interrupt_vec(PORT1_VECTOR) Port_1() {
   if(P1IFG & SWITCH_1) {
     P1IFG &= ~SWITCH_1;
-    switch_interrupt_handler();
+    switch_interrupt_handler_P1();
   }
 }
 

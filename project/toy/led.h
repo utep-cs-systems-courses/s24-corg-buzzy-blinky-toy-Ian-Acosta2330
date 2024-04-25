@@ -5,4 +5,6 @@
 #define LED_GREEN BIT0
 #define LEDS (BIT6 | BIT0)
 
+int redControl(int on);
+
 #endif

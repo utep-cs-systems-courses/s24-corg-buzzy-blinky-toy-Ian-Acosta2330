@@ -7,20 +7,25 @@ CC = msp430-elf-gcc
 AS = msp430-elf-as
 
 
-all: led.elf
+all: led-c.elf #led-s.elf
 
-led.elf: ${COMMON_OBJECTS} buzzer.o
+
+#led-s.elf: ${COMMON_OBJECTS} buzzer.o redControl-s.o
+#	${CC} ${CFLAGS} ${LDFLAGS} -o $@ $^ ../lib/libTimer.a
+
+led-c.elf: ${COMMON_OBJECTS} buzzer.o redControl-c.o
 	${CC} ${CFLAGS} ${LDFLAGS} -o $@ $^ ../lib/libTimer.a
 
-load: led.elf
-	msp430loader.sh led.elf
+#load-s: led-s.elf
+#	msp430loader.sh $^
+load-c: led-c.elf
+	msp430loader.sh $^
 
 clean:
-	rm -f *.o *.elf *~ *.c#
+	rm -f *.o *.elf *~ *.c# *#
 
 buzzer.c: buzzer.h
-main.c: buzzer.h
 
 main.o: led.h
-
+redControl-c.o: led.h 
 wdInterruptHandler.o: led.h
