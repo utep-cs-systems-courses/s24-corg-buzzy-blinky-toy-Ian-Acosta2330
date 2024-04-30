@@ -6,7 +6,7 @@
 #define LEDS (BIT6 | BIT0)
 
 int redControl(int on);
-void blink();
+void  blink();
 void song();
 void play(int dur);
 

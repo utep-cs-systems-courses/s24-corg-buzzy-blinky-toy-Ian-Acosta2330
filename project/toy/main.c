@@ -27,6 +27,7 @@
 
 volatile int red_on = 0;
 volatile int green_on = 0;
+volatile int redDim = 0;
 
 int main(void) {
   P1DIR |= LEDS;
@@ -38,7 +39,7 @@ int main(void) {
 
   configureClocks();
   buzzer_init();
-  // enableWDTInterrupts();
+  //enableWDTInterrupts();
 
   
   P1REN |= SWITCH_1;
@@ -129,8 +130,9 @@ void switch_interrupt_handler_P2_4() {
   if (p2val & SW4) {
     if(red_on) {
       blink();
+      red_on = 0;
     }
-  } else {
+  }else {
     P1OUT &= ~LED_RED;
   }
 }
@@ -143,13 +145,9 @@ void switch_interrupt_handler_P2_5() {
     buzzer_set_period(0);
   } else {
     buzzer_set_period(4940);
-    __delay_cycles(10000000);
-    buzzer_set_period(5870);
-    __delay_cycles(5000000);
+    __delay_cycles(1000000);
     buzzer_set_period(4940);
-    __delay_cycles(10000000);
-    buzzer_set_period(1000);
-    __delay_cycles(20000000);
+    __delay_cycles(1000000);
     buzzer_set_period(0);
     /* buzzer_set_period(4940);
     __delay_cycles(2500000);
